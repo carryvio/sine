@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩天輪與正弦函數 | Ferris Wheel & Sine Function</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 2px solid #4ade80;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            gap: 15px;
+        }
+
+        .canvas-wrapper {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .canvas-wrapper h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4ade80;
+            font-size: 1.1rem;
+        }
+
+        #mainCanvas {
+            display: block;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .bottom-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .controls-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            flex: 1;
+            min-width: 280px;
+            max-width: 400px;
+        }
+
+        .controls-panel h2 {
+            color: #4ade80;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .control-group label span {
+            color: #60a5fa;
+            font-style: italic;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4ade80;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+        }
+
+        .value-display {
+            min-width: 55px;
+            text-align: right;
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f97316;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        .info-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            flex: 1;
+            min-width: 280px;
+            max-width: 400px;
+        }
+
+        .info-panel h2 {
+            color: #4ade80;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #4ade80;
+        }
+
+        .formula-box {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 2px solid #4ade80;
+            grid-column: 1 / -1;
+        }
+
+        .formula-box h3 {
+            color: #4ade80;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .formula {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.2rem;
+            color: #fbbf24;
+            text-align: center;
+            padding: 10px;
+            background: rgba(251, 191, 36, 0.1);
+            border-radius: 6px;
+        }
+
+        .time-display {
+            text-align: center;
+            padding: 10px;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .time-display span {
+            color: #a5b4fc;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 900px) {
+            #mainCanvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🎡 摩天輪與正弦函數 Ferris Wheel & Sine Function</h1>
+        <p>觀察摩天輪旋轉如何產生正弦波 | Watch how the Ferris wheel generates a sine wave</p>
+    </header>
+
+    <div class="main-container">
+        <!-- 主畫布：摩天輪 + 正弦曲線 -->
+        <div class="canvas-wrapper">
+            <canvas id="mainCanvas" width="1100" height="500"></canvas>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ef4444;"></div>
+                    <span>追蹤車廂 Tracked Cabin</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ade80;"></div>
+                    <span>高度曲線 Height Curve</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f97316;"></div>
+                    <span>中心線 Midline</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #a78bfa;"></div>
+                    <span>週期 Period</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下方面板 -->
+        <div class="bottom-panel">
+            <!-- 控制面板 -->
+            <div class="controls-panel">
+                <h2>⚙️ 參數控制 Parameters</h2>
+                
+                <div class="control-group">
+                    <label>振幅 Amplitude (A) = 半徑 Radius</label>
+                    <div class="slider-container">
+                        <input type="range" id="radiusSlider" min="10" max="40" value="25">
+                        <span class="value-display" id="radiusValue">25 m</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>垂直位移 Vertical Shift (C) = 中心高度</label>
+                    <div class="slider-container">
+                        <input type="range" id="centerSlider" min="30" max="60" value="40">
+                        <span class="value-display" id="centerValue">40 m</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>週期 Period (T) <span>→ B = 2π/T</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="periodSlider" min="2" max="10" value="4" step="0.5">
+                        <span class="value-display" id="periodValue">4 min</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>動畫速度 Speed</label>
+                    <div class="slider-container">
+                        <input type="range" id="speedSlider" min="0.5" max="3" value="1" step="0.1">
+                        <span class="value-display" id="speedValue">1.0x</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="playPauseBtn">⏸️ 暫停 Pause</button>
+                    <button class="btn btn-secondary" id="resetBtn">🔄 重置 Reset</button>
+                </div>
+
+                <div class="time-display">
+                    <span>⏱️ 時間 Time: </span>
+                    <strong id="timeDisplay">0.00</strong> min
+                </div>
+            </div>
+
+            <!-- 資訊面板 -->
+            <div class="info-panel">
+                <h2>📊 即時數據 Real-time Data</h2>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">當前高度 Height</span>
+                        <span class="info-value" id="currentHeight">15.0 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">振幅 Amplitude</span>
+                        <span class="info-value" id="amplitude">25 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">最大值 Maximum</span>
+                        <span class="info-value" id="maxHeight">65 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">最小值 Minimum</span>
+                        <span class="info-value" id="minHeight">15 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">週期 Period (T)</span>
+                        <span class="info-value" id="period">4 min</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">B 值 (2π/T)</span>
+                        <span class="info-value" id="bValue">π/2</span>
+                    </div>
+
+                    <div class="formula-box">
+                        <h3>📐 數學模型 Mathematical Model</h3>
+                        <div class="formula" id="formulaDisplay">
+                            h(t) = 25·sin(π/2·t − π/2) + 40
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 全域變數 =====
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 參數
+        let radius = 25;
+        let centerHeight = 40;
+        let period = 4;
+        let speed = 1;
+        let time = 0;
+        let isPlaying = true;
+        let lastTimestamp = 0;
+
+        // 歷史軌跡
+        let trailPoints = [];
+        const maxTrailPoints = 500;
+
+        // ===== DOM 元素 =====
+        const radiusSlider = document.getElementById('radiusSlider');
+        const centerSlider = document.getElementById('centerSlider');
+        const periodSlider = document.getElementById('periodSlider');
+        const speedSlider = document.getElementById('speedSlider');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // ===== 事件監聽 =====
+        radiusSlider.addEventListener('input', (e) => {
+            radius = parseInt(e.target.value);
+            document.getElementById('radiusValue').textContent = radius + ' m';
+            updateInfo();
+            trailPoints = [];
+        });
+
+        centerSlider.addEventListener('input', (e) => {
+            centerHeight = parseInt(e.target.value);
+            document.getElementById('centerValue').textContent = centerHeight + ' m';
+            updateInfo();
+            trailPoints = [];
+        });
+
+        periodSlider.addEventListener('input', (e) => {
+            period = parseFloat(e.target.value);
+            document.getElementById('periodValue').textContent = period + ' min';
+            updateInfo();
+            trailPoints = [];
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = speed.toFixed(1) + 'x';
+        });
+
+        playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playPauseBtn.textContent = isPlaying ? '⏸️ 暫停 Pause' : '▶️ 播放 Play';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            time = 0;
+            trailPoints = [];
+        });
+
+        // ===== 計算函數 =====
+        function getHeight(t) {
+            const B = (2 * Math.PI) / period;
+            const phi = -Math.PI / 2;
+            return radius * Math.sin(B * t + phi) + centerHeight;
+        }
+
+        function getAngle(t) {
+            const B = (2 * Math.PI) / period;
+            return B * t - Math.PI / 2;
+        }
+
+        // ===== 主繪製函數 =====
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+
+            // 背景漸層
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+            bgGradient.addColorStop(0, '#1e3a5f');
+            bgGradient.addColorStop(1, '#0f1729');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
+
+            // 星星
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 137 + 50) % width;
+                const y = (i * 89 + 20) % (height * 0.5);
+                const size = (i % 3) + 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // ===== 佈局參數 =====
+            const wheelSection = 320;  // 摩天輪區域寬度
+            const graphSection = width - wheelSection - 50;  // 圖形區域寬度
+            const groundY = height - 40;
+            const scale = 4.5;
+            
+            const wheelCenterX = 160;
+            const wheelCenterY = groundY - centerHeight * scale;
+            const wheelRadius = radius * scale;
+
+            // ===== 繪製地面 =====
+            ctx.fillStyle = '#2d4a3e';
+            ctx.fillRect(0, groundY, width, height - groundY);
+
+            // 地面標籤
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '12px Microsoft JhengHei';
+            ctx.fillText('地面 Ground (0 m)', 10, groundY + 25);
+
+            // ===== 繪製摩天輪 =====
+            // 支架
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(wheelCenterX - 40, groundY);
+            ctx.lineTo(wheelCenterX, wheelCenterY);
+            ctx.lineTo(wheelCenterX + 40, groundY);
+            ctx.stroke();
+
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(wheelCenterX, groundY);
+            ctx.lineTo(wheelCenterX, wheelCenterY);
+            ctx.stroke();
+
+            // 外圈發光
+            ctx.shadowColor = '#4ade80';
+            ctx.shadowBlur = 15;
+            ctx.strokeStyle = '#4ade80';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(wheelCenterX, wheelCenterY, wheelRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 輪輻
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            const currentAngle = getAngle(time);
+            for (let i = 0; i < 12; i++) {
+                const spokeAngle = currentAngle + (i * Math.PI / 6);
+                ctx.beginPath();
+                ctx.moveTo(wheelCenterX, wheelCenterY);
+                ctx.lineTo(
+                    wheelCenterX + Math.cos(spokeAngle) * wheelRadius,
+                    wheelCenterY + Math.sin(spokeAngle) * wheelRadius
+                );
+                ctx.stroke();
+            }
+
+            // 車廂
+            for (let i = 0; i < 12; i++) {
+                const cabinAngle = currentAngle + (i * Math.PI / 6);
+                const cabinX = wheelCenterX + Math.cos(cabinAngle) * wheelRadius;
+                const cabinY = wheelCenterY + Math.sin(cabinAngle) * wheelRadius;
+                
+                const isMainCabin = (i === 0);
+                
+                if (isMainCabin) {
+                    ctx.shadowColor = '#ef4444';
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(cabinX, cabinY, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(cabinX, cabinY, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 中心軸
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.arc(wheelCenterX, wheelCenterY, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // ===== 當前乘客位置 =====
+            const passengerX = wheelCenterX + Math.cos(currentAngle) * wheelRadius;
+            const passengerY = wheelCenterY + Math.sin(currentAngle) * wheelRadius;
+            const currentH = getHeight(time);
+
+            // ===== 繪製正弦曲線區域 =====
+            const graphLeft = wheelSection;
+            const graphRight = width - 30;
+            const graphWidth = graphRight - graphLeft;
+            
+            // Y 軸對應（與摩天輪同比例）
+            const toGraphY = (h) => groundY - h * scale;
+            
+            // X 軸對應（時間）
+            const xRange = period * 2;
+            const toGraphX = (t) => graphLeft + (t / xRange) * graphWidth;
+
+            // 繪製中心線（延伸到整個寬度）
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(0, toGraphY(centerHeight));
+            ctx.lineTo(width, toGraphY(centerHeight));
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 中心線標籤
+            ctx.fillStyle = '#f97316';
+            ctx.font = '12px Microsoft JhengHei';
+            ctx.fillText('中心線 Midline = ' + centerHeight + ' m', graphLeft + 10, toGraphY(centerHeight) - 8);
+
+            // 繪製最大/最小值線
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(graphLeft, toGraphY(centerHeight + radius));
+            ctx.lineTo(graphRight, toGraphY(centerHeight + radius));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(graphLeft, toGraphY(centerHeight - radius));
+            ctx.lineTo(graphRight, toGraphY(centerHeight - radius));
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 最大/最小值標籤
+            ctx.fillStyle = '#ef4444';
+            ctx.font = '11px Microsoft JhengHei';
+            ctx.fillText('Max = ' + (centerHeight + radius) + ' m', graphRight - 70, toGraphY(centerHeight + radius) - 5);
+            ctx.fillText('Min = ' + (centerHeight - radius) + ' m', graphRight - 70, toGraphY(centerHeight - radius) + 15);
+
+            // 繪製 Y 軸
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(graphLeft, toGraphY(0));
+            ctx.lineTo(graphLeft, toGraphY(centerHeight + radius + 15));
+            ctx.stroke();
+
+            // Y 軸刻度
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Microsoft JhengHei';
+            ctx.textAlign = 'right';
+            for (let h = 0; h <= centerHeight + radius + 10; h += 10) {
+                const y = toGraphY(h);
+                ctx.beginPath();
+                ctx.moveTo(graphLeft - 5, y);
+                ctx.lineTo(graphLeft, y);
+                ctx.stroke();
+                ctx.fillText(h.toString(), graphLeft - 8, y + 4);
+            }
+
+            // X 軸
+            ctx.beginPath();
+            ctx.moveTo(graphLeft, groundY);
+            ctx.lineTo(graphRight, groundY);
+            ctx.stroke();
+
+            // X 軸刻度和標籤
+            ctx.textAlign = 'center';
+            for (let t = 0; t <= xRange; t += period / 2) {
+                const x = toGraphX(t);
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x, groundY + 5);
+                ctx.stroke();
+                ctx.fillText(t.toFixed(1), x, groundY + 18);
+            }
+
+            // 軸標題
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 13px Microsoft JhengHei';
+            ctx.textAlign = 'center';
+            ctx.fillText('時間 Time (min)', (graphLeft + graphRight) / 2, groundY + 35);
+
+            ctx.save();
+            ctx.translate(graphLeft - 45, (toGraphY(centerHeight + radius) + toGraphY(centerHeight - radius)) / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('高度 Height (m)', 0, 0);
+            ctx.restore();
+
+            // 繪製完整正弦曲線（淡色預覽）
+            ctx.strokeStyle = 'rgba(74, 222, 128, 0.25)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let t = 0; t <= xRange; t += 0.02) {
+                const x = toGraphX(t);
+                const y = toGraphY(getHeight(t));
+                if (t === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // 繪製軌跡（亮色）
+            if (trailPoints.length > 1) {
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#4ade80';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                
+                let started = false;
+                for (let i = 0; i < trailPoints.length; i++) {
+                    const pt = trailPoints[i];
+                    const drawT = pt.t % xRange;
+                    const x = toGraphX(drawT);
+                    const y = toGraphY(pt.h);
+                    
+                    if (!started) {
+                        ctx.moveTo(x, y);
+                        started = true;
+                    } else {
+                        // 檢查是否跨週期
+                        const prevT = trailPoints[i-1].t % xRange;
+                        if (drawT < prevT - 0.5) {
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // ===== 連接線：從乘客到圖形 =====
+            const currentT = time % xRange;
+            const dotX = toGraphX(currentT);
+            const dotY = toGraphY(currentH);
+
+            ctx.strokeStyle = '#60a5fa';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(passengerX, passengerY);
+            ctx.lineTo(dotX, dotY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 當前點（圖形上）
+            ctx.shadowColor = '#60a5fa';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 當前高度標籤
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = 'bold 13px Microsoft JhengHei';
+            ctx.textAlign = 'left';
+            ctx.fillText('h = ' + currentH.toFixed(1) + ' m', dotX + 12, dotY - 5);
+
+            // ===== 週期標註 =====
+            const periodY = groundY + 28;
+            ctx.strokeStyle = '#a78bfa';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(toGraphX(0), periodY);
+            ctx.lineTo(toGraphX(period), periodY);
+            ctx.stroke();
+
+            // 週期箭頭
+            ctx.beginPath();
+            ctx.moveTo(toGraphX(0), periodY - 4);
+            ctx.lineTo(toGraphX(0), periodY + 4);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(toGraphX(period), periodY - 4);
+            ctx.lineTo(toGraphX(period), periodY + 4);
+            ctx.stroke();
+
+            ctx.fillStyle = '#a78bfa';
+            ctx.font = 'bold 12px Microsoft JhengHei';
+            ctx.textAlign = 'center';
+            ctx.fillText('T = ' + period + ' min', (toGraphX(0) + toGraphX(period)) / 2, periodY - 8);
+
+            // ===== 振幅標註 =====
+            const ampX = graphRight - 15;
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ampX, toGraphY(centerHeight));
+            ctx.lineTo(ampX, toGraphY(centerHeight + radius));
+            ctx.stroke();
+
+            // 振幅箭頭
+            ctx.beginPath();
+            ctx.moveTo(ampX - 4, toGraphY(centerHeight));
+            ctx.lineTo(ampX + 4, toGraphY(centerHeight));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(ampX - 4, toGraphY(centerHeight + radius));
+            ctx.lineTo(ampX + 4, toGraphY(centerHeight + radius));
+            ctx.stroke();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 12px Microsoft JhengHei';
+            ctx.textAlign = 'center';
+            ctx.save();
+            ctx.translate(ampX + 15, (toGraphY(centerHeight) + toGraphY(centerHeight + radius)) / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('A = ' + radius + ' m', 0, 0);
+            ctx.restore();
+        }
+
+        // ===== 更新資訊 =====
+        function updateInfo() {
+            const currentH = getHeight(time);
+            const maxH = centerHeight + radius;
+            const minH = centerHeight - radius;
+
+            document.getElementById('currentHeight').textContent = currentH.toFixed(1) + ' m';
+            document.getElementById('maxHeight').textContent = maxH + ' m';
+            document.getElementById('minHeight').textContent = minH + ' m';
+            document.getElementById('amplitude').textContent = radius + ' m';
+            document.getElementById('period').textContent = period + ' min';
+
+            // B 值
+            let bDisplay;
+            if (period === 4) bDisplay = 'π/2';
+            else if (period === 2) bDisplay = 'π';
+            else if (period === 1) bDisplay = '2π';
+            else bDisplay = (2 * Math.PI / period).toFixed(2);
+            document.getElementById('bValue').textContent = bDisplay;
+
+            // 公式
+            document.getElementById('formulaDisplay').textContent = 
+                `h(t) = ${radius}·sin(${bDisplay}·t − π/2) + ${centerHeight}`;
+
+            document.getElementById('timeDisplay').textContent = time.toFixed(2);
+        }
+
+        // ===== 動畫循環 =====
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const deltaTime = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            if (isPlaying) {
+                time += deltaTime * speed * 0.5;
+
+                // 記錄軌跡
+                const currentH = getHeight(time);
+                if (trailPoints.length === 0 || 
+                    Math.abs(time - trailPoints[trailPoints.length - 1].t) > 0.015) {
+                    trailPoints.push({ t: time, h: currentH });
+                    if (trailPoints.length > maxTrailPoints) {
+                        trailPoints.shift();
+                    }
+                }
+            }
+
+            draw();
+            updateInfo();
+            requestAnimationFrame(animate);
+        }
+
+        // ===== 初始化 =====
+        updateInfo();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
